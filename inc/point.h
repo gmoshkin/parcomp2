@@ -62,6 +62,22 @@ struct Point
     }
 };
 
+struct XComparablePoint: public Point
+{
+    bool operator <(const Point &that)
+    {
+        return this->getX() < that.getX();
+    }
+};
+
+struct YComparablePoint: public Point
+{
+    bool operator <(const Point &that)
+    {
+        return this->getY() < that.getY();
+    }
+};
+
 ostream &operator <<(ostream &out, const Point &p)
 {
     return out << '{' << p.getX() << ',' << p.getY() << "}[" << p.getIndex() << ']';
