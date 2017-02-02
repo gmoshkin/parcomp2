@@ -43,6 +43,66 @@ void mergeSort(vector<T> &v)
     mergeSortSegment(v, tmp, 0, v.size());
 }
 
+inline size_t leftChild(size_t i)
+{
+    return (i + 1) * 2 - 1;
+}
+
+inline size_t rightChild(size_t i)
+{
+    return (i + 1) * 2;
+}
+
+inline size_t parent(size_t i)
+{
+    return (i + 1) / 2 - 1;
+}
+
+template <typename T>
+void fixRoot(vector<T> &v, size_t root, size_t end)
+{
+    size_t oldRoot = root;
+    size_t left = leftChild(oldRoot);
+    size_t right = rightChild(oldRoot);
+    size_t newRoot = oldRoot;
+    for (; left < end;
+         oldRoot = newRoot,
+         left = leftChild(newRoot),
+         right = rightChild(newRoot)) {
+        if (v[newRoot] < v[left]) {
+            newRoot = left;
+        }
+        if ((right < end) && (v[newRoot] < v[right])) {
+            newRoot = right;
+        }
+        if (newRoot == oldRoot) {
+            break;
+        }
+        swap(v[oldRoot], v[newRoot]);
+    }
+}
+
+template <typename T>
+inline void formHeap(vector<T> &v)
+{
+    for (long root = parent(v.size() - 1); root >= 0; root--) {
+        fixRoot(v, root, v.size());
+    }
+}
+
+template <typename T>
+void heapSort(vector<T> &v)
+{
+    DEBUG("not heap: " << v << std::endl);
+    formHeap(v);
+    DEBUG("heap: " << v << std::endl);
+
+    for (size_t end = v.size() - 1; end > 0; end--) {
+        swap(v[0], v[end]);
+        fixRoot(v, 0, end);
+    }
+}
+
 }
 
 
