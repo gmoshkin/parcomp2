@@ -70,16 +70,24 @@ struct XComparablePoint: public Point
 {
     bool operator <(const Point &that)
     {
-        return this->getX() < that.getX();
+        return ((this->index >= 0) &&
+                ((that.index < 0) ||
+                 (this->getX() < that.getX())));
     }
+    XComparablePoint(float x, float y, int i) : Point(x, y, i) {}
+    XComparablePoint(const Point &p) : Point(p.getX(), p.getY(), p.getIndex()) {}
 };
 
 struct YComparablePoint: public Point
 {
     bool operator <(const Point &that)
     {
-        return this->getY() < that.getY();
+        return ((this->index >= 0) &&
+                ((that.index < 0) ||
+                 (this->getY() < that.getY())));
     }
+    YComparablePoint(float x, float y, int i) : Point(x, y, i) {}
+    YComparablePoint(const Point &p) : Point(p.getX(), p.getY(), p.getIndex()) {}
 };
 
 ostream &operator <<(ostream &out, const Point &p)
@@ -89,6 +97,12 @@ ostream &operator <<(ostream &out, const Point &p)
 
 typedef std::vector<Point> points_t;
 typedef points_t::const_iterator points_it;
+
+typedef std::vector<XComparablePoint> xpoints_t;
+typedef xpoints_t::const_iterator xpoints_it;
+
+typedef std::vector<YComparablePoint> ypoints_t;
+typedef ypoints_t::const_iterator ypoints_it;
 
 }
 
