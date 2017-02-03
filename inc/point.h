@@ -2,8 +2,10 @@
 #define __POINT_H__
 
 #include <vector>
-#include <mpi.h>
 #include <iostream>
+#ifndef WITHOUT_MPI
+#include <mpi.h>
+#endif
 
 using std::ostream;
 
@@ -46,6 +48,7 @@ struct Point
     {
         return this->index = i;
     }
+#ifndef WITHOUT_MPI
     static void getMPIDatatype(MPI_Datatype &type)
     {
         int count = 2;
@@ -60,6 +63,7 @@ struct Point
         MPI_Type_create_struct(count, blockLengths, dispacements, types, &type);
         MPI_Type_commit(&type);
     }
+#endif
 };
 
 struct XComparablePoint: public Point
