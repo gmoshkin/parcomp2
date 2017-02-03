@@ -42,4 +42,7 @@ $(DEPEND): $(SRCDIR)/* $(INCDIR)/*
 csv2data: src/csv2data/entry.cpp
 	$(CXX) $(CXXFLAGS) -DWITHOUT_MPI src/csv2data/entry.cpp -o bin/csv2data
 
+data2csv: src/data2csv/entry.cpp
+	$(CXX) $(CXXFLAGS) -DWITHOUT_MPI src/data2csv/entry.cpp -o bin/data2csv
+
 include $(DEPEND)
