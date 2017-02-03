@@ -4,7 +4,8 @@ INCDIR = inc
 BINDIR = bin
 DEPEND = .depend
 CXXFLAGS = -g -Wall -I $(INCDIR)
-CXX = mpic++
+CXX = g++
+MPIXX = mpic++
 # RUN = mpirun
 EXEC = $(BINDIR)/bsort
 
@@ -25,17 +26,20 @@ run: $(EXEC)
 	$(EXEC)
 
 $(EXEC): $(patsubst $(SRCDIR)/%.cpp, $(BINDIR)/%.o, $(wildcard $(SRCDIR)/*))
-	$(CXX) $(CXXFLAGS) -o $@ $(filter %.o, $^)
+	$(MPIXX) $(CXXFLAGS) -o $@ $(filter %.o, $^)
 
 $(BINDIR)/%.o: $(SRCDIR)/%.cpp $(DEPEND)
 	# $*
 	mkdir -p $(BINDIR)
-	$(CXX) $(CXXFLAGS) -c -o $(call SRC2OBJ, $<) $<
+	$(MPIXX) $(CXXFLAGS) -c -o $(call SRC2OBJ, $<) $<
 
 depend: $(DEPEND)
 
 $(DEPEND): $(SRCDIR)/* $(INCDIR)/*
 	rm -f $(DEPEND)
-	$(CXX) $(CXXFLAGS) -MM $^ -MF  $(DEPEND)
+	$(MPIXX) $(CXXFLAGS) -MM $^ -MF  $(DEPEND)
+
+csv2data: src/csv2data/entry.cpp
+	$(CXX) $(CXXFLAGS) -DWITHOUT_MPI src/csv2data/entry.cpp -o bin/csv2data
 
 include $(DEPEND)
