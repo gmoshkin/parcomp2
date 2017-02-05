@@ -50,11 +50,14 @@ public:
         stringstream name;
         name << "log_" << this->getRank();
         this->logger = new Logger(name.str());
+        this->logger->logTime("Start");
 
         this->startTimer("total");
     }
     ~MPIWrapper()
     {
+        this->logger->logTime("Finish");
+
         MPI_Finalize();
         if (this->logger != NULL) {
             delete this->logger;
@@ -66,6 +69,14 @@ public:
         if (this->logger != NULL) {
             this->logger->log(msg);
         }
+    }
+
+    void logTimer(const string &name)
+    {
+        stringstream ss;
+        ss << std::fixed << std::setprecision(5);
+        ss << name << ": {" << this->timers[name] << " }" << endl;
+        this->log(ss.str());
     }
 
     void logTimers()
@@ -127,9 +138,14 @@ public:
     {
         return this->timers[name].start();
     }
-    double finishTimer(const string &name)
+    double finishTimer(const string &name, bool erase = false)
     {
-        return this->timers[name].finish();
+        double time = this->timers[name].finish();
+        if (erase) {
+            this->logTimer(name);
+            this->timers.erase(name);
+        }
+        return time;
     }
 };
 

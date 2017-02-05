@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <ctime>
 
 class Logger
 {
@@ -17,6 +18,14 @@ public:
     {
         std::ofstream fs(this->filename.c_str(), std::ofstream::app);
         fs << s;
+    }
+    void logTime(const std::string &s)
+    {
+        std::ofstream fs(this->filename.c_str(), std::ofstream::app);
+        fs << s;
+        time_t t;
+        time(&t);
+        fs << " " << ctime(&t) << std::endl;
     }
 };
 
