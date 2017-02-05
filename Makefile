@@ -45,4 +45,7 @@ csv2data: src/csv2data/entry.cpp
 data2csv: src/data2csv/entry.cpp
 	$(CXX) $(CXXFLAGS) -DWITHOUT_MPI src/data2csv/entry.cpp -o bin/data2csv
 
+splitdata: src/splitdata/entry.cpp
+	$(CXX) $(CXXFLAGS) -DWITHOUT_MPI src/splitdata/entry.cpp -o bin/splitdata
+
 include $(DEPEND)
