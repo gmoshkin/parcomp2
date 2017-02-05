@@ -11,6 +11,18 @@ using std::swap;
 
 namespace Sort {
 
+int sort(numbers_t &l1, numbers_t &l2);
+
+template <typename T>
+void printSlice(vector<T> &v, size_t start, size_t end)
+{
+    DEBUG("{ ");
+    for (size_t i = start; i < end; i++) {
+        DEBUG(v[i] << " ");
+    }
+    DEBUG("}");
+}
+
 template <typename T>
 void mergeSortSegment(vector<T> &v, vector<T> &tmp, size_t start, size_t end)
 {
