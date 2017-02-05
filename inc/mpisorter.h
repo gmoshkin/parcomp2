@@ -35,10 +35,10 @@ public:
 
     double sortAll()
     {
-        this->mpi.startParallelSortTimer();
+        this->mpi.startTimer("parallel sort");
         size_t procCount = this->mpi.getProcCount();
         this->getSchedule(procCount, 0);
-        return this->mpi.finishParallelSortTimer();
+        return this->mpi.finishTimer("parallel sort");
     }
 
     void sortPair(node_t n1, node_t n2)
@@ -54,9 +54,9 @@ public:
 
     double sortOur()
     {
-        this->mpi.startSortTimer();
+        this->mpi.startTimer("sort");
         Sort::heapSort(this->ourData);
-        return this->mpi.finishSortTimer();
+        return this->mpi.finishTimer("sort");
     }
 
     void mergeBottom()

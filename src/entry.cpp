@@ -28,14 +28,18 @@ int main(int argc, char *argv[])
     }
     IOManager iomanager(input, output);
     xpoints_t ourData;
+    mpi.startTimer("read data");
     iomanager.readData(ourData);
+    mpi.finishTimer("read data");
 
     MPISorter<XComparablePoint> sorter(mpi, ourData);
     sorter.extendSize();
     sorter.sortOur();
     sorter.sortAll();
 
+    mpi.startTimer("write data");
     iomanager.writeData(sorter.getOurData());
+    mpi.finishTimer("write data");
 
     mpi.logTimers();
 

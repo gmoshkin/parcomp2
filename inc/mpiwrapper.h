@@ -1,6 +1,7 @@
 #ifndef __MPIWRAPPER_H__
 #define __MPIWRAPPER_H__
 
+#include <map>
 #include <mpi.h>
 #include <vector>
 #include <string>
@@ -24,20 +25,20 @@ using std::endl;
 class MPIWrapper
 {
 private:
+    typedef std::map<std::string, MPITimer> timers_t;
+    typedef timers_t::const_iterator timers_it;
+
     int argc;
     char **argv;
     size_t maxSize;
     int rank, procCount;
-    MPITimer *totalTimer;
-    MPITimer *sortTimer;
-    MPITimer *parallelSortTimer;
-    MPITimer *dataExchangeTimer;
     Logger *logger;
+
+    timers_t timers;
 
 public:
     MPIWrapper(int argc, char **argv) : argc(argc), argv(argv), maxSize(0),
-        rank(-1), procCount(0), totalTimer(NULL), sortTimer(NULL),
-        parallelSortTimer(NULL), dataExchangeTimer(NULL)
+        rank(-1), procCount(0)
     {
         MPI_Init(&this->argc, &this->argv);
         MPI_Comm_rank(MPI_COMM_WORLD, &this->rank);
@@ -47,23 +48,11 @@ public:
         name << "log_" << this->getRank();
         this->logger = new Logger(name.str());
 
-        this->startTotalTimer();
+        this->startTimer("total");
     }
     ~MPIWrapper()
     {
         MPI_Finalize();
-        if (this->totalTimer != NULL) {
-            delete this->totalTimer;
-        }
-        if (this->sortTimer != NULL) {
-            delete this->sortTimer;
-        }
-        if (this->parallelSortTimer != NULL) {
-            delete this->parallelSortTimer;
-        }
-        if (this->dataExchangeTimer != NULL) {
-            delete this->dataExchangeTimer;
-        }
         if (this->logger != NULL) {
             delete this->logger;
         }
@@ -78,19 +67,18 @@ public:
 
     void logTimers()
     {
-        this->finishTotalTimer();
+        this->finishTimer("total");
         std::stringstream ss;
-        ss << "total: { " << *(this->totalTimer) << " }" << endl;
-        ss << "linear sort: { " << *(this->sortTimer) << " }" << endl;
-        ss << "parallel sort: { " << *(this->parallelSortTimer) << " }" << endl;
-        ss << "data exchange: { " << *(this->dataExchangeTimer) << " }" << endl;
+        for (timers_it it = this->timers.begin(); it != this->timers.end(); it++) {
+            ss << it->first << ": { " << it->second << " }" << endl;
+        }
         this->log(ss.str());
     }
 
     template <typename T>
     double exchangeData(int theirRank, const vector<T> &our, vector<T> &their)
     {
-        this->startDataExchangeTimer();
+        this->startTimer("data exchange");
         MPI_Datatype type;
         T::getMPIDatatype(type);
         size_t count = this->getMaxSize();
@@ -108,7 +96,7 @@ public:
 
         array2vector(theirBuf, their, count);
         delete[] theirBuf;
-        return this->finishDataExchangeTimer();
+        return this->finishTimer("data exchange");
     }
 
     size_t getMaxSize() const
@@ -131,52 +119,13 @@ public:
         return this->procCount;
     }
 
-    double startTotalTimer()
+    double startTimer(const std::string &name)
     {
-        if (this->totalTimer == NULL) {
-            this->totalTimer = new MPITimer();
-        }
-        return this->totalTimer->start();
+        return this->timers[name].start();
     }
-    double finishTotalTimer()
+    double finishTimer(const std::string &name)
     {
-        return this->totalTimer->finish();
-    }
-
-    double startSortTimer()
-    {
-        if (this->sortTimer == NULL) {
-            this->sortTimer = new MPITimer();
-        }
-        return this->sortTimer->start();
-    }
-    double finishSortTimer()
-    {
-        return this->sortTimer->finish();
-    }
-
-    double startParallelSortTimer()
-    {
-        if (this->parallelSortTimer == NULL) {
-            this->parallelSortTimer = new MPITimer();
-        }
-        return this->parallelSortTimer->start();
-    }
-    double finishParallelSortTimer()
-    {
-        return this->parallelSortTimer->finish();
-    }
-
-    double startDataExchangeTimer()
-    {
-        if (this->dataExchangeTimer == NULL) {
-            this->dataExchangeTimer = new MPITimer();
-        }
-        return this->dataExchangeTimer->start();
-    }
-    double finishDataExchangeTimer()
-    {
-        return this->dataExchangeTimer->finish();
+        return this->timers[name].finish();
     }
 };
 
