@@ -35,6 +35,8 @@ int main(int argc, char *argv[])
     sorter.sortOur();
     sorter.sortAll();
 
+    mpi.logTimers();
+
     iomanager.writeData(sorter.getOurData());
 
     return 0;

@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <ostream>
 
 #include "mpitimer.h"
 #include "logger.h"
@@ -18,6 +19,7 @@
     } while(0);
 
 using std::vector;
+using std::endl;
 
 class MPIWrapper
 {
@@ -60,6 +62,15 @@ public:
         if (this->logger != NULL) {
             this->logger->log(msg);
         }
+    }
+
+    void logTimers()
+    {
+        std::stringstream ss;
+        ss << "linear sort: { " << this->sortTimer << " }" << endl;
+        ss << "parallel sort: { " << this->parallelSortTimer << " }" << endl;
+        ss << "data exchange: { " << this->dataExchangeTimer << " }" << endl;
+        this->log(ss.str());
     }
 
     template <typename T>
