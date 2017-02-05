@@ -12,20 +12,20 @@ class MPITimer
 private:
     typedef std::vector<double> durations_t;
 
-    double startTick;
-    double endTick;
+    double startTime;
+    double endTime;
 
     durations_t durations;
 
 public:
     double start()
     {
-        return this->startTick = MPI_Wtick();
+        return this->startTime = MPI_Wtime();
     }
     double finish()
     {
-        this->endTick = MPI_Wtick();
-        double duration = this->endTick - this->startTick;
+        this->endTime = MPI_Wtime();
+        double duration = this->endTime - this->startTime;
         this->durations.push_back(duration);
         return duration;
     }

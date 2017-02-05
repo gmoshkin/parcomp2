@@ -36,15 +36,15 @@ private:
 
 public:
     MPIWrapper(int argc, char **argv) : argc(argc), argv(argv), maxSize(0),
-    rank(-1), procCount(0)
+        rank(-1), procCount(0), totalTimer(NULL), sortTimer(NULL),
+        parallelSortTimer(NULL), dataExchangeTimer(NULL)
     {
         MPI_Init(&this->argc, &this->argv);
         MPI_Comm_rank(MPI_COMM_WORLD, &this->rank);
         MPI_Comm_size(MPI_COMM_WORLD, &this->procCount);
 
         std::stringstream name;
-        name << "log_";
-        name << this->getRank();
+        name << "log_" << this->getRank();
         this->logger = new Logger(name.str());
 
         this->startTotalTimer();
@@ -133,7 +133,9 @@ public:
 
     double startTotalTimer()
     {
-        this->totalTimer = new MPITimer();
+        if (this->totalTimer == NULL) {
+            this->totalTimer = new MPITimer();
+        }
         return this->totalTimer->start();
     }
     double finishTotalTimer()
@@ -143,7 +145,9 @@ public:
 
     double startSortTimer()
     {
-        this->sortTimer = new MPITimer();
+        if (this->sortTimer == NULL) {
+            this->sortTimer = new MPITimer();
+        }
         return this->sortTimer->start();
     }
     double finishSortTimer()
@@ -153,7 +157,9 @@ public:
 
     double startParallelSortTimer()
     {
-        this->parallelSortTimer = new MPITimer();
+        if (this->parallelSortTimer == NULL) {
+            this->parallelSortTimer = new MPITimer();
+        }
         return this->parallelSortTimer->start();
     }
     double finishParallelSortTimer()
@@ -163,7 +169,9 @@ public:
 
     double startDataExchangeTimer()
     {
-        this->dataExchangeTimer = new MPITimer();
+        if (this->dataExchangeTimer == NULL) {
+            this->dataExchangeTimer = new MPITimer();
+        }
         return this->dataExchangeTimer->start();
     }
     double finishDataExchangeTimer()
