@@ -33,7 +33,7 @@ private:
 
 public:
     MPIWrapper(int argc, char **argv) : argc(argc), argv(argv), maxSize(0),
-    rank(-1), procCount(0), sortTimer(NULL), paralleSortTimer(NULL)
+    rank(-1), procCount(0), sortTimer(NULL), parallelSortTimer(NULL)
     {
         MPI_Init(&this->argc, &this->argv);
         MPI_Comm_rank(MPI_COMM_WORLD, &this->rank);
