@@ -28,6 +28,7 @@ private:
     char **argv;
     size_t maxSize;
     int rank, procCount;
+    MPITimer *totalTimer;
     MPITimer *sortTimer;
     MPITimer *parallelSortTimer;
     MPITimer *dataExchangeTimer;
@@ -35,7 +36,7 @@ private:
 
 public:
     MPIWrapper(int argc, char **argv) : argc(argc), argv(argv), maxSize(0),
-    rank(-1), procCount(0), sortTimer(NULL), parallelSortTimer(NULL)
+    rank(-1), procCount(0)
     {
         MPI_Init(&this->argc, &this->argv);
         MPI_Comm_rank(MPI_COMM_WORLD, &this->rank);
@@ -45,12 +46,23 @@ public:
         name << "log_";
         name << this->getRank();
         this->logger = new Logger(name.str());
+
+        this->startTotalTimer();
     }
     ~MPIWrapper()
     {
         MPI_Finalize();
+        if (this->totalTimer != NULL) {
+            delete this->totalTimer;
+        }
         if (this->sortTimer != NULL) {
             delete this->sortTimer;
+        }
+        if (this->parallelSortTimer != NULL) {
+            delete this->parallelSortTimer;
+        }
+        if (this->dataExchangeTimer != NULL) {
+            delete this->dataExchangeTimer;
         }
         if (this->logger != NULL) {
             delete this->logger;
@@ -66,10 +78,12 @@ public:
 
     void logTimers()
     {
+        this->finishTotalTimer();
         std::stringstream ss;
-        ss << "linear sort: { " << this->sortTimer << " }" << endl;
-        ss << "parallel sort: { " << this->parallelSortTimer << " }" << endl;
-        ss << "data exchange: { " << this->dataExchangeTimer << " }" << endl;
+        ss << "total: { " << *(this->totalTimer) << " }" << endl;
+        ss << "linear sort: { " << *(this->sortTimer) << " }" << endl;
+        ss << "parallel sort: { " << *(this->parallelSortTimer) << " }" << endl;
+        ss << "data exchange: { " << *(this->dataExchangeTimer) << " }" << endl;
         this->log(ss.str());
     }
 
@@ -115,6 +129,16 @@ public:
     int getProcCount() const
     {
         return this->procCount;
+    }
+
+    double startTotalTimer()
+    {
+        this->totalTimer = new MPITimer();
+        return this->totalTimer->start();
+    }
+    double finishTotalTimer()
+    {
+        return this->totalTimer->finish();
     }
 
     double startSortTimer()
