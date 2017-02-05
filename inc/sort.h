@@ -2,10 +2,12 @@
 #define __SORT_H__
 
 #include <vector>
+#include <algorithm>
 
 #include "utils.h"
 
 using std::vector;
+using std::swap;
 
 namespace Sort {
 
@@ -93,9 +95,7 @@ inline void formHeap(vector<T> &v)
 template <typename T>
 void heapSort(vector<T> &v)
 {
-    DEBUG("not heap: " << v << std::endl);
     formHeap(v);
-    DEBUG("heap: " << v << std::endl);
 
     for (size_t end = v.size() - 1; end > 0; end--) {
         swap(v[0], v[end]);
