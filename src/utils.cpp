@@ -91,7 +91,7 @@ int parseFilenames(int argc, char *argv[], int rank, string &input, string &outp
         std::istringstream converter(argv[3]);
         converter >> threshold;
     } else {
-        threshold = 0;
+        threshold = -1;
     }
     return 0;
 }
