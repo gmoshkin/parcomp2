@@ -28,7 +28,15 @@ private:
 
 public:
     MPISorter(MPIWrapper &mpi, vector<T> &data, size_t threshold)
-        : threshold(threshold), mpi(mpi), ourData(data) {}
+        : threshold(threshold), mpi(mpi), ourData(data)
+    {
+#ifdef COMBINED_SORT
+        MPILOG(mpi, "Threshold is " << this->threshold << std::endl);
+#else
+        MPILOG(mpi, "Mergesort only" << std::endl);
+#endif
+        MPILOG(mpi, "Data size " << this->ourData.size() << std::endl);
+    }
 
     const container_t &getOurData() const
     {
@@ -57,11 +65,15 @@ public:
     double sortOur()
     {
         this->mpi.startTimer("sort");
+#ifdef COMBINED_SORT
         if (this->ourData.size() < this->threshold) {
             this->heapSort(this->ourData);
         } else {
             this->mergeSort(this->ourData);
         }
+#else
+        this->mergeSort(this->ourData);
+#endif
         return this->mpi.finishTimer("sort", true);
     }
 
@@ -112,6 +124,7 @@ public:
             this->ourData.push_back(T::makeDummy());
             difference--;
         }
+        MPILOG(mpi, "Max size per process: " << mpi.getMaxSize() << std::endl);
     }
 
     void logSlice(container_t &v, size_t start, size_t end)
@@ -128,10 +141,13 @@ public:
         size_t segmentLen = end - start;
         if (segmentLen < 2) {
             return;
-        } else if (segmentLen < this->threshold) {
+        }
+#ifdef COMBINED_SORT
+        if (segmentLen < this->threshold) {
             this->heapSort(v, start, end);
             return;
         }
+#endif
         size_t middle = (start + end) / 2;
         mergeSortSegment(v, tmp, start, middle);
         mergeSortSegment(v, tmp, middle, end);
@@ -198,6 +214,7 @@ public:
 
     inline void formHeap(container_t &v, int start = -1, int end = -1)
     {
+#ifdef COMBINED_SORT
         if (start >= 0 && end >= 0) {
             for (long root = parent(end - 1, start); root >= start; root--) {
                 fixRoot(v, root, end, start);
@@ -208,10 +225,16 @@ public:
                 fixRoot(v, root, v.size());
             }
         }
+#else
+        for (long root = parent(v.size() - 1, start); root >= 0; root--) {
+            fixRoot(v, root, v.size());
+        }
+#endif
     }
 
     void heapSort(container_t &v, int start = -1, int end = -1)
     {
+#ifdef COMBINED_SORT
         if (start >= 0 && end >= 0) {
             formHeap(v, start, end);
 
@@ -227,6 +250,14 @@ public:
                 fixRoot(v, 0, end);
             }
         }
+#else
+        formHeap(v);
+
+        for (size_t end = v.size() - 1; end > 0; end--) {
+            swap(v[0], v[end]);
+            fixRoot(v, 0, end);
+        }
+#endif
     }
 };
 

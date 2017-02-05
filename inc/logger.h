@@ -25,7 +25,7 @@ public:
         fs << s;
         time_t t;
         time(&t);
-        fs << " " << ctime(&t) << std::endl;
+        fs << " " << ctime(&t);
     }
 };
 
