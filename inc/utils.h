@@ -39,6 +39,6 @@ void array2vector(const T *a, std::vector<T> &v, size_t count)
 
 int parseOptions(int argc, char *argv[], int &n1, int &n2);
 int parseLists(int argc, char *argv[], numbers_t &n1, numbers_t &n2);
-int parseFilenames(int argc, char *argv[], int, std::string &, std::string &);
+int parseFilenames(int argc, char *argv[], int, std::string &, std::string &, long &threshold);
 
 #endif /* end of include guard: __UTILS_H__ */

@@ -17,29 +17,34 @@ using std::endl;
 using std::swap;
 using std::string;
 
+static const size_t defaultThreshold = 10000;
 
 int main(int argc, char *argv[])
 {
     MPIWrapper mpi(argc, argv);
 
     string input, output;
-    if (parseFilenames(argc, argv, mpi.getRank(), input, output) < 0) {
+    long threshold;
+    if (parseFilenames(argc, argv, mpi.getRank(), input, output, threshold) < 0) {
         return -1;
     }
     IOManager iomanager(input, output);
     xpoints_t ourData;
     mpi.startTimer("read data");
     iomanager.readData(ourData);
-    mpi.finishTimer("read data");
+    mpi.finishTimer("read data", true);
 
-    MPISorter<XComparablePoint> sorter(mpi, ourData);
+    if (threshold < 0) {
+        threshold = defaultThreshold;
+    }
+    MPISorter<XComparablePoint> sorter(mpi, ourData, threshold);
     sorter.extendSize();
     sorter.sortOur();
     sorter.sortAll();
 
     mpi.startTimer("write data");
     iomanager.writeData(sorter.getOurData());
-    mpi.finishTimer("write data");
+    mpi.finishTimer("write data", true);
 
     mpi.logTimers();
 

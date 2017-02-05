@@ -22,10 +22,12 @@ const char *usage =
 "   n1      the number of elements in the unordered group\n";
 
 const char *usage2 =
-"Usage: bsort input output\n"
+"Usage: bsort input output [threshold]\n"
 "\n"
 "   input      input file prefix\n"
 "   output     output file prefix\n"
+"   threshold  the minimal size of the array which has to be sorted with the\n"
+"              heap sort\n"
 "The respective filenames are constructed by appending processor rank to the\n"
 "prefix\n";
 
@@ -74,7 +76,7 @@ std::ostream &operator <<(std::ostream &out, const numbers_t &numbers)
     return out;
 }
 
-int parseFilenames(int argc, char *argv[], int rank, string &input, string &output)
+int parseFilenames(int argc, char *argv[], int rank, string &input, string &output, long &threshold)
 {
     if (argc < 3) {
         cerr << usage2;
@@ -85,5 +87,11 @@ int parseFilenames(int argc, char *argv[], int rank, string &input, string &outp
     out << argv[2] << rank;
     input = in.str();
     output = out.str();
+    if (argc > 3) {
+        std::istringstream converter(argv[3]);
+        converter >> threshold;
+    } else {
+        threshold = 0;
+    }
     return 0;
 }

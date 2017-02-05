@@ -21,12 +21,14 @@ private:
     typedef typename container_t::iterator iterator_t;
     typedef typename container_t::reverse_iterator riterator_t;
 
+    size_t threshold;
     MPIWrapper &mpi;
     container_t ourData;
     container_t theirData;
 
 public:
-    MPISorter(MPIWrapper &mpi, vector<T> &data) : mpi(mpi), ourData(data) {}
+    MPISorter(MPIWrapper &mpi, vector<T> &data, size_t threshold)
+        : threshold(threshold), mpi(mpi), ourData(data) {}
 
     const container_t &getOurData() const
     {
@@ -38,7 +40,7 @@ public:
         this->mpi.startTimer("parallel sort");
         size_t procCount = this->mpi.getProcCount();
         this->getSchedule(procCount, 0);
-        return this->mpi.finishTimer("parallel sort");
+        return this->mpi.finishTimer("parallel sort", true);
     }
 
     void sortPair(node_t n1, node_t n2)
@@ -55,8 +57,12 @@ public:
     double sortOur()
     {
         this->mpi.startTimer("sort");
-        Sort::heapSort(this->ourData);
-        return this->mpi.finishTimer("sort");
+        if (this->ourData.size() < this->threshold) {
+            this->heapSort(this->ourData);
+        } else {
+            this->mergeSort(this->ourData);
+        }
+        return this->mpi.finishTimer("sort", true);
     }
 
     void mergeBottom()
@@ -105,6 +111,121 @@ public:
         while (difference) {
             this->ourData.push_back(T::makeDummy());
             difference--;
+        }
+    }
+
+    void logSlice(container_t &v, size_t start, size_t end)
+    {
+        MPILOG(mpi, "{ ");
+        for (size_t i = start; i < end; i++) {
+            MPILOG(mpi, v[i] << " ");
+        }
+        MPILOG(mpi, "}");
+    }
+
+    void mergeSortSegment(container_t &v, container_t &tmp, size_t start, size_t end)
+    {
+        size_t segmentLen = end - start;
+        if (segmentLen < 2) {
+            return;
+        } else if (segmentLen < this->threshold) {
+            this->heapSort(v, start, end);
+            return;
+        }
+        size_t middle = (start + end) / 2;
+        mergeSortSegment(v, tmp, start, middle);
+        mergeSortSegment(v, tmp, middle, end);
+
+        size_t left = start;
+        size_t right = middle;
+        for (size_t i = start; i < end; i++) {
+            if (left < middle && (right >= end || v[left] < v[right])) {
+                tmp[i] = v[left++];
+            } else {
+                tmp[i] = v[right++];
+            }
+        }
+
+        for (size_t i = start; i < end; i++) {
+            v[i] = tmp[i];
+        }
+    }
+
+    void mergeSort(container_t &v)
+    {
+        container_t tmp;
+        tmp.reserve(v.size());
+        mergeSortSegment(v, tmp, 0, v.size());
+    }
+
+    inline size_t leftChild(size_t i, size_t i0 = 0)
+    {
+        return (i - i0 + 1) * 2 - 1 + i0;
+    }
+
+    inline size_t rightChild(size_t i, size_t i0 = 0)
+    {
+        return (i - i0 + 1) * 2 + i0;
+    }
+
+    inline size_t parent(size_t i, size_t i0 = 0)
+    {
+        return (i - i0 + 1) / 2 - 1 + i0;
+    }
+
+    void fixRoot(container_t &v, size_t root, size_t end, size_t i0 = 0)
+    {
+        size_t oldRoot = root;
+        size_t left = leftChild(oldRoot, i0);
+        size_t right = rightChild(oldRoot, i0);
+        size_t newRoot = oldRoot;
+        for (; left < end;
+            oldRoot = newRoot,
+            left = leftChild(newRoot, i0),
+            right = rightChild(newRoot, i0)) {
+            if (v[newRoot] < v[left]) {
+                newRoot = left;
+            }
+            if ((right < end) && (v[newRoot] < v[right])) {
+                newRoot = right;
+            }
+            if (newRoot == oldRoot) {
+                break;
+            }
+            swap(v[oldRoot], v[newRoot]);
+        }
+    }
+
+    inline void formHeap(container_t &v, int start = -1, int end = -1)
+    {
+        if (start >= 0 && end >= 0) {
+            for (long root = parent(end - 1, start); root >= start; root--) {
+                fixRoot(v, root, end, start);
+            }
+        }
+        else {
+            for (long root = parent(v.size() - 1, start); root >= 0; root--) {
+                fixRoot(v, root, v.size());
+            }
+        }
+    }
+
+    void heapSort(container_t &v, int start = -1, int end = -1)
+    {
+        if (start >= 0 && end >= 0) {
+            formHeap(v, start, end);
+
+            for (end--; end > start; end--) {
+                swap(v[start], v[end]);
+                fixRoot(v, start, end, start);
+            }
+        } else {
+            formHeap(v);
+
+            for (size_t end = v.size() - 1; end > 0; end--) {
+                swap(v[0], v[end]);
+                fixRoot(v, 0, end);
+            }
         }
     }
 };
