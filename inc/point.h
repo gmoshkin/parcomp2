@@ -48,6 +48,11 @@ struct Point
     {
         return this->index = i;
     }
+
+    static Point makeDummy()
+    {
+        return Point(0.0f, 0.0f, -1);
+    }
 #ifndef WITHOUT_MPI
     static void getMPIDatatype(MPI_Datatype &type)
     {
@@ -74,6 +79,7 @@ struct XComparablePoint: public Point
                 ((that.index < 0) ||
                  (this->getX() < that.getX())));
     }
+    XComparablePoint() : Point() {}
     XComparablePoint(float x, float y, int i) : Point(x, y, i) {}
     XComparablePoint(const Point &p) : Point(p.getX(), p.getY(), p.getIndex()) {}
 };
@@ -86,6 +92,7 @@ struct YComparablePoint: public Point
                 ((that.index < 0) ||
                  (this->getY() < that.getY())));
     }
+    YComparablePoint() : Point() {}
     YComparablePoint(float x, float y, int i) : Point(x, y, i) {}
     YComparablePoint(const Point &p) : Point(p.getX(), p.getY(), p.getIndex()) {}
 };
