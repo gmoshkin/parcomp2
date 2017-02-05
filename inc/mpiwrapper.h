@@ -7,6 +7,7 @@
 #include <string>
 #include <sstream>
 #include <ostream>
+#include <iomanip>
 
 #include "mpitimer.h"
 #include "logger.h"
@@ -19,13 +20,15 @@
         logger.log(ss.str());\
     } while(0);
 
+using std::stringstream;
 using std::vector;
+using std::string;
 using std::endl;
 
 class MPIWrapper
 {
 private:
-    typedef std::map<std::string, MPITimer> timers_t;
+    typedef std::map<string, MPITimer> timers_t;
     typedef timers_t::const_iterator timers_it;
 
     int argc;
@@ -44,7 +47,7 @@ public:
         MPI_Comm_rank(MPI_COMM_WORLD, &this->rank);
         MPI_Comm_size(MPI_COMM_WORLD, &this->procCount);
 
-        std::stringstream name;
+        stringstream name;
         name << "log_" << this->getRank();
         this->logger = new Logger(name.str());
 
@@ -58,7 +61,7 @@ public:
         }
     }
 
-    void log(const std::string &msg)
+    void log(const string &msg)
     {
         if (this->logger != NULL) {
             this->logger->log(msg);
@@ -68,7 +71,8 @@ public:
     void logTimers()
     {
         this->finishTimer("total");
-        std::stringstream ss;
+        stringstream ss;
+        ss << std::fixed << std::setprecision(5);
         for (timers_it it = this->timers.begin(); it != this->timers.end(); it++) {
             ss << it->first << ": { " << it->second << " }" << endl;
         }
@@ -119,11 +123,11 @@ public:
         return this->procCount;
     }
 
-    double startTimer(const std::string &name)
+    double startTimer(const string &name)
     {
         return this->timers[name].start();
     }
-    double finishTimer(const std::string &name)
+    double finishTimer(const string &name)
     {
         return this->timers[name].finish();
     }
