@@ -3,6 +3,9 @@
 
 #include <mpi.h>
 #include <vector>
+#include <ostream>
+
+using std::ostream;
 
 class MPITimer
 {
@@ -42,6 +45,12 @@ public:
     size_t getCount() const
     {
         return this->durations.size();
+    }
+
+    friend ostream &operator <<(ostream &out, const MPITimer &timer)
+    {
+        out << "count: " << timer.getCount() << ", total: " << timer.getTotal();
+        return out;
     }
 };
 
