@@ -39,7 +39,5 @@ int main(int argc, char *argv[])
 
     mpi.logTimers();
 
-    iomanager.writeData(sorter.getOurData());
-
     return 0;
 }
