@@ -1,4 +1,6 @@
-*data*
+data*
+smalldata*
+bigdata*
 bin/
 .depend
 log_*
