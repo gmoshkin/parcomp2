@@ -41,7 +41,7 @@ public:
     }
     size_t getCount() const
     {
-        this->durations.size();
+        return this->durations.size();
     }
 };
 
